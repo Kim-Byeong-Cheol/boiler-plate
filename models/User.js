@@ -55,6 +55,8 @@ userSchema.pre("save", function (next) {
         .catch(err => {
             return next(err);
         });
+    } else {
+        next();
     }
 });
 
