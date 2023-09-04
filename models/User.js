@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const moment = require('moment');
 
 const userSchema = mongoose.Schema({
     name: {
@@ -56,6 +57,25 @@ userSchema.pre("save", function (next) {
         });
     }
 });
+
+userSchema.methods.comparePassword = function (planePassword, cb) {
+    bcrypt.compare(planePassword, this.password)
+    .then(isMatch => { cb(null, isMatch); })
+    .catch(err => { return cb(err); });
+};
+
+userSchema.methods.generateToken = function (cb) {
+    let user = this;
+    // jsonwebtoken을 이용해서 토큰을 생성하기
+    let token = jwt.sign(user._id.toHexString(), "secretToken");
+    let oneHour = moment().add(1, "hour").valueOf();
+
+    user.token = token;
+    user.tokenExp = oneHour;
+    user.save()
+    .then(user => { cb(null, user) })
+    .catch(err => { return cb(err) })
+};
 
 const User = mongoose.model('User', userSchema);
 module.exports = { User };
