@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const moment = require('moment');
+const jwt = require("jsonwebtoken");
 
 const userSchema = mongoose.Schema({
     name: {
@@ -63,7 +64,7 @@ userSchema.pre("save", function (next) {
 userSchema.methods.comparePassword = function (planePassword, cb) {
     bcrypt.compare(planePassword, this.password)
     .then(isMatch => { cb(null, isMatch); })
-    .catch(err => { return cb(err); });
+    .catch(err => { return cb(err, null); });
 };
 
 userSchema.methods.generateToken = function (cb) {
