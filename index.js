@@ -8,6 +8,8 @@ const config = require('./config/key.js');
 
 const { User } = require('./models/User.js');
 
+const { auth } = require('./middleware/auth.js');
+
 // application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -77,6 +79,20 @@ app.post('/login', (req, res) => {
   
 
   // 비밀번호 까지 맞다면 토큰을 생성하기 
+});
+
+app.get('/api/users/auth', auth, function (req, res) {
+  // 여기 호출이 된바면 미들웨어까지는 수행 되었다는 말.
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true,
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
+  });
 });
 
 app.listen(port, () => {

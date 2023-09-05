@@ -43,18 +43,15 @@ userSchema.pre("save", function (next) {
 
     if (user.isModified("password")) {
         bcrypt.genSalt(saltRounds)
-        .then(result => {
-            bcrypt.hash(user.password, result)
-            .then(hash => {
-                user.password = hash;
-                next();
-            })
-            .catch(err => {
-                return next(err);
-            });
+        .then(result => { 
+            return bcrypt.hash(user.password, result)
+        })
+        .then(hash => {
+            user.password = hash;
+            next();
         })
         .catch(err => {
-            return next(err);
+            next(err);
         });
     } else {
         next();
@@ -78,6 +75,17 @@ userSchema.methods.generateToken = function (cb) {
     user.save()
     .then(user => { cb(null, user) })
     .catch(err => { return cb(err) })
+};
+
+userSchema.statics.findByToken = function (token, cb) {
+    let user = this;
+
+    // 토큰을 decode 한다.
+    jwt.verify(token, 'secretToken', function (err, decoded) {
+        user.findOne({ "_id": decoded, "token": token })
+        .then(user => { cb(null, user); })
+        .catch(err => { cb(err); });
+    });
 };
 
 const User = mongoose.model('User', userSchema);
